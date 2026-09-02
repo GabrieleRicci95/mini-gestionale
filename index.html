@@ -4,296 +4,163 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini CRM Dashboard</title>
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* [CSS Variables & Reset] */
-        :root {
-            --sidebar-bg: #111827;
-            --sidebar-hover: #1f2937;
-            --main-bg: #f3f4f6;
-            --card-bg: #ffffff;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --text-dark: #1f2937;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-        }
+        :root { --sidebar-bg: #111827; --sidebar-hover: #1f2937; --main-bg: #f3f4f6; --card-bg: #ffffff; --primary: #3b82f6; --primary-hover: #2563eb; --text-dark: #1f2937; --text-muted: #6b7280; --border: #e5e7eb; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { display: flex; min-height: 100vh; background-color: var(--main-bg); color: var(--text-dark); }
-        
-        /* [Sidebar] */
-        .sidebar { width: 250px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; transition: 0.3s; }
+        body { display: flex; min-height: 100vh; background-color: var(--main-bg); color: var(--text-dark); overflow: hidden; }
+        .sidebar { width: 250px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100; }
         .sidebar-header { padding: 20px; font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #374151; }
         .sidebar-menu { list-style: none; padding: 20px 0; flex: 1; }
-        .sidebar-menu li { padding: 12px 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; color: #9ca3af; }
+        .sidebar-menu li { padding: 12px 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; color: #9ca3af; font-weight: 500; }
         .sidebar-menu li:hover, .sidebar-menu li.active { background: var(--sidebar-hover); color: white; border-left: 4px solid var(--primary); }
         .sidebar-menu li i { width: 20px; text-align: center; }
-        /* [Main Content] */
         .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; }
-        
-        /* [Header] */
-        .header { background: var(--card-bg); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .search-bar { background: var(--main-bg); padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; gap: 10px; width: 300px; }
-        .search-bar input { border: none; background: transparent; outline: none; width: 100%; color: var(--text-dark); }
+        .header { background: var(--card-bg); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+        .header-title { font-size: 1.2rem; font-weight: 600; }
         .user-profile { display: flex; align-items: center; gap: 10px; font-weight: 500; cursor: pointer; }
-        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
-        /* [Dashboard Widgets] */
-        .dashboard-container { padding: 30px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid var(--border); display: flex; align-items: center; gap: 20px; }
-        .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; }
-        .icon-blue { background: #dbeafe; color: #2563eb; }
-        .icon-green { background: #d1fae5; color: #059669; }
-        .icon-purple { background: #f3e8ff; color: #7c3aed; }
-        .stat-info h4 { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
-        .stat-info h2 { font-size: 1.5rem; font-weight: 700; margin-top: 5px; }
-        /* [Charts & Tables Section] */
-        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .user-profile img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .view-section { padding: 30px; display: none; animation: fadeIn 0.4s ease-in-out; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; align-items: center; gap: 20px; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-icon { width: 55px; height: 55px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; }
+        .icon-blue { background: #dbeafe; color: #2563eb; } .icon-green { background: #d1fae5; color: #059669; } .icon-purple { background: #f3e8ff; color: #7c3aed; }
+        .stat-info h4 { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; } .stat-info h2 { font-size: 1.6rem; font-weight: 700; margin-top: 5px; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .card-header h3 { font-size: 1.1rem; font-weight: 600; }
-        .btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .card-header h3 { font-size: 1.2rem; font-weight: 600; color: var(--text-dark); }
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: 0.2s; font-size: 0.9rem; }
         .btn:hover { background: var(--primary-hover); }
-        /* [Table] */
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; }
-        tbody tr:hover { background: #f9fafb; }
-        .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
-        .badge.active { background: #d1fae5; color: #059669; }
-        .badge.pending { background: #fef3c7; color: #d97706; }
-        .action-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; margin: 0 5px; transition: 0.2s;}
-        .action-btn:hover { color: var(--danger); }
-        /* [Modal] */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal { background: white; padding: 30px; border-radius: 10px; width: 400px; max-width: 90%; }
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 0.9rem; margin-bottom: 5px; color: var(--text-dark); font-weight: 500; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 5px; outline: none; }
-        .form-group input:focus { border-color: var(--primary); }
-        @media (max-width: 992px) { .content-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) {
-            .sidebar { position: absolute; left: -250px; z-index: 100; height: 100vh; }
-            .sidebar.open { left: 0; }
-            .header { padding: 15px; }
-            .search-bar { width: 200px; }
-        }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; background: #f9fafb; }
+        tbody tr { transition: background 0.2s; } tbody tr:hover { background: #f3f4f6; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .badge.active { background: #d1fae5; color: #059669; } .badge.pending { background: #fef3c7; color: #d97706; } .badge.paid { background: #e0e7ff; color: #4338ca; }
+        .action-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; margin: 0 5px; transition: 0.2s;}
+        .action-btn:hover { color: var(--danger); transform: scale(1.1); }
+        .settings-form { max-width: 600px; } .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.9rem; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; outline: none; background: #f9fafb; transition: 0.3s; }
+        .form-group input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(3px); }
+        .modal { background: white; padding: 30px; border-radius: 12px; width: 450px; max-width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); animation: modalIn 0.3s ease-out; }
+        @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 25px; align-items: center; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: color 0.2s; }
+        .close-btn:hover { color: var(--danger); }
+        @media (max-width: 768px) { .sidebar { position: absolute; left: -250px; height: 100vh; } .sidebar.open { left: 0; } }
     </style>
 </head>
 <body>
-    <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <i class="fas fa-cube"></i> CRM Pro
-        </div>
+        <div class="sidebar-header"><i class="fas fa-cube" style="color: var(--primary);"></i> CRM Pro</div>
         <ul class="sidebar-menu">
-            <li class="active"><i class="fas fa-home"></i> Dashboard</li>
-            <li><i class="fas fa-users"></i> Clienti</li>
-            <li><i class="fas fa-chart-line"></i> Analitiche</li>
-            <li><i class="fas fa-file-invoice-dollar"></i> Fatture</li>
-            <li><i class="fas fa-cog"></i> Impostazioni</li>
+            <li class="nav-btn active" data-target="dashboard" data-title="Panoramica Generale"><i class="fas fa-home"></i> Dashboard</li>
+            <li class="nav-btn" data-target="clienti" data-title="Gestione Clienti"><i class="fas fa-users"></i> Clienti</li>
+            <li class="nav-btn" data-target="analitiche" data-title="Analitiche e Dati"><i class="fas fa-chart-pie"></i> Analitiche</li>
+            <li class="nav-btn" data-target="fatture" data-title="Archivio Fatture"><i class="fas fa-file-invoice-dollar"></i> Fatture</li>
+            <li class="nav-btn" data-target="impostazioni" data-title="Impostazioni Profilo"><i class="fas fa-cog"></i> Impostazioni</li>
         </ul>
     </div>
-    <!-- MAIN CONTENT -->
     <div class="main-content">
-        <!-- HEADER -->
         <div class="header">
-            <div class="search-bar">
-                <i class="fas fa-search text-muted"></i>
-                <input type="text" placeholder="Cerca nel gestionale...">
+            <div class="header-title" id="page-title">Panoramica Generale</div>
+            <div class="user-profile"><span>Gabriele Ricci</span><img src="https://ui-avatars.com/api/?name=Gabriele+Ricci&background=3b82f6&color=fff" alt="User"></div>
+        </div>
+        <div id="view-dashboard" class="view-section active">
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon icon-blue"><i class="fas fa-users"></i></div><div class="stat-info"><h4>Clienti Totali</h4><h2 id="dash-total-clients">--</h2></div></div>
+                <div class="stat-card"><div class="stat-icon icon-green"><i class="fas fa-wallet"></i></div><div class="stat-info"><h4>Fatturato Anno</h4><h2>€ 42.500</h2></div></div>
+                <div class="stat-card"><div class="stat-icon icon-purple"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h4>Task Completati</h4><h2>128</h2></div></div>
             </div>
-            <div class="user-profile">
-                <span>Admin Gabriele</span>
-                <img src="https://ui-avatars.com/api/?name=Gabriele+Ricci&background=3b82f6&color=fff" alt="User">
+            <div class="card"><div class="card-header"><h3>Andamento Fatturato (2026)</h3></div><div style="height: 300px; position: relative;"><canvas id="revenueChart"></canvas></div></div>
+        </div>
+        <div id="view-clienti" class="view-section">
+            <div class="card"><div class="card-header"><h3>Database Clienti</h3><button class="btn" onclick="openModal()"><i class="fas fa-plus"></i> Nuovo Cliente</button></div>
+            <div style="overflow-x: auto;"><table><thead><tr><th>Azienda / Nome</th><th>Email</th><th>Telefono</th><th>Stato</th><th style="text-align: right;">Azioni</th></tr></thead><tbody id="clients-table-body"></tbody></table></div></div>
+        </div>
+        <div id="view-analitiche" class="view-section">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div class="card"><div class="card-header"><h3>Distribuzione Clienti</h3></div><div style="height: 300px; display: flex; justify-content: center;"><canvas id="pieChart"></canvas></div></div>
+                <div class="card"><div class="card-header"><h3>Report Rapido</h3></div><p style="color: var(--text-muted); line-height: 1.8;">Nel mese in corso si registra un incremento del <strong>15%</strong>.<br><br>Suggerimento: Concentrarsi sulla conversione.</p></div>
             </div>
         </div>
-        <div class="dashboard-container">
-            <!-- STATS WIDGETS -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon icon-blue"><i class="fas fa-users"></i></div>
-                    <div class="stat-info">
-                        <h4>Clienti Totali</h4>
-                        <h2 id="total-clients">--</h2>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon icon-green"><i class="fas fa-wallet"></i></div>
-                    <div class="stat-info">
-                        <h4>Fatturato Mensile</h4>
-                        <h2>€ 24.500</h2>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon icon-purple"><i class="fas fa-project-diagram"></i></div>
-                    <div class="stat-info">
-                        <h4>Progetti Attivi</h4>
-                        <h2>12</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="content-grid">
-                <!-- CLIENTS TABLE -->
-                <div class="card" style="grid-column: 1 / -1;">
-                    <div class="card-header">
-                        <h3>Gestione Clienti</h3>
-                        <button class="btn" onclick="openModal()"><i class="fas fa-plus"></i> Nuovo Cliente</button>
-                    </div>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Azienda / Nome</th>
-                                    <th>Email</th>
-                                    <th>Telefono</th>
-                                    <th>Stato</th>
-                                    <th>Azioni</th>
-                                </tr>
-                            </thead>
-                            <tbody id="clients-table-body">
-                                <!-- Dati generati da JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- CHART -->
-                <div class="card" style="grid-column: 1 / -1;">
-                    <div class="card-header">
-                        <h3>Andamento Fatturato (2026)</h3>
-                    </div>
-                    <canvas id="revenueChart" height="80"></canvas>
-                </div>
-            </div>
+        <div id="view-fatture" class="view-section">
+            <div class="card"><div class="card-header"><h3>Ultime Fatture Emesse</h3><button class="btn" style="background: var(--success);"><i class="fas fa-file-invoice"></i> Genera Fattura</button></div>
+            <table><thead><tr><th>N. Fattura</th><th>Data</th><th>Cliente</th><th>Importo</th><th>Stato</th></tr></thead><tbody>
+            <tr><td>#FT-2026-001</td><td>12 Mar 2026</td><td>Tech Solutions Srl</td><td>€ 1.250,00</td><td><span class="badge paid">Pagata</span></td></tr>
+            <tr><td>#FT-2026-002</td><td>05 Apr 2026</td><td>Ristorante La Piazzetta</td><td>€ 850,00</td><td><span class="badge pending">In Attesa</span></td></tr>
+            </tbody></table></div>
+        </div>
+        <div id="view-impostazioni" class="view-section">
+            <div class="card settings-form"><div class="card-header"><h3>Modifica Profilo</h3></div>
+            <form onsubmit="event.preventDefault(); alert('Impostazioni salvate con successo!');"><div class="form-group"><label>Nome Completo</label><input type="text" value="Gabriele Ricci"></div><div class="form-group"><label>Indirizzo Email</label><input type="email" value="gabrielericci234@gmail.com"></div><button class="btn" type="submit">Salva Cambiamenti</button></form></div>
         </div>
     </div>
-    <!-- MODAL AGGIUNGI CLIENTE -->
     <div class="modal-overlay" id="modal">
         <div class="modal">
-            <div class="modal-header">
-                <h3>Aggiungi Cliente</h3>
-                <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
-            </div>
+            <div class="modal-header"><h3 style="margin:0;">Aggiungi Cliente</h3><button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button></div>
             <form id="add-client-form">
-                <div class="form-group">
-                    <label>Azienda o Nome Completo</label>
-                    <input type="text" id="client-name" required>
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="client-email" required>
-                </div>
-                <div class="form-group">
-                    <label>Telefono</label>
-                    <input type="text" id="client-phone" required>
-                </div>
-                <div class="form-group">
-                    <label>Stato</label>
-                    <select id="client-status">
-                        <option value="active">Attivo</option>
-                        <option value="pending">In Trattativa</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn" style="width: 100%;">Salva Cliente</button>
+                <div class="form-group"><label>Azienda o Nome</label><input type="text" id="client-name" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="client-email" required></div>
+                <div class="form-group"><label>Telefono</label><input type="text" id="client-phone" required></div>
+                <div class="form-group"><label>Stato</label><select id="client-status"><option value="active">Attivo</option><option value="pending">In Trattativa</option></select></div>
+                <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Salva Cliente</button>
             </form>
         </div>
     </div>
     <script>
-        // --- INIZIALIZZAZIONE GRAFICO (CHART.JS) ---
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu'],
-                datasets: [{
-                    label: 'Fatturato (€)',
-                    data: [12000, 15000, 14000, 18000, 22000, 24500],
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, grid: { borderDash: [5, 5] } }, x: { grid: { display: false } } }
-            }
-        });
-        // --- GESTIONE DATI CLIENTI (LOCAL STORAGE) ---
-        const defaultClients = [
-            { id: 1, name: "Tech Solutions Srl", email: "info@techsolutions.it", phone: "06 1234567", status: "active" },
-            { id: 2, name: "Mario Rossi Architetto", email: "mario.rossi@studio.it", phone: "333 9876543", status: "pending" },
-            { id: 3, name: "Ristorante La Piazzetta", email: "ordini@lapiazzetta.com", phone: "02 7654321", status: "active" }
-        ];
-        let clients = JSON.parse(localStorage.getItem('crm_clients'));
-        if (!clients || clients.length === 0) {
-            clients = defaultClients;
-            localStorage.setItem('crm_clients', JSON.stringify(clients));
-        }
-        const tableBody = document.getElementById('clients-table-body');
-        const totalClientsEl = document.getElementById('total-clients');
-        function renderTable() {
-            tableBody.innerHTML = '';
-            clients.forEach(client => {
-                const statusBadge = client.status === 'active' 
-                    ? '<span class="badge active">Attivo</span>' 
-                    : '<span class="badge pending">In Trattativa</span>';
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight:500;">${client.name}</td>
-                    <td>${client.email}</td>
-                    <td>${client.phone}</td>
-                    <td>${statusBadge}</td>
-                    <td>
-                        <button class="action-btn" title="Elimina" onclick="deleteClient(${client.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+                    document.getElementById('view-' + this.getAttribute('data-target')).classList.add('active');
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById('page-title').innerText = this.getAttribute('data-title');
+                });
             });
-            totalClientsEl.textContent = clients.length;
-        }
-        function deleteClient(id) {
-            if(confirm("Sei sicuro di voler eliminare questo cliente?")) {
-                clients = clients.filter(c => c.id !== id);
-                localStorage.setItem('crm_clients', JSON.stringify(clients));
-                renderTable();
-            }
-        }
-        // --- MODAL & FORM ---
-        const modal = document.getElementById('modal');
-        const form = document.getElementById('add-client-form');
-        function openModal() { modal.style.display = 'flex'; }
-        function closeModal() { modal.style.display = 'none'; form.reset(); }
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newClient = {
-                id: Date.now(),
-                name: document.getElementById('client-name').value,
-                email: document.getElementById('client-email').value,
-                phone: document.getElementById('client-phone').value,
-                status: document.getElementById('client-status').value
+            const modal = document.getElementById('modal');
+            window.openModal = function() { modal.style.display = 'flex'; };
+            window.closeModal = function() { modal.style.display = 'none'; document.getElementById('add-client-form').reset(); };
+            new Chart(document.getElementById('revenueChart').getContext('2d'), {
+                type: 'line', data: { labels: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu'], datasets: [{ label: 'Fatturato (€)', data: [12000, 15000, 14000, 18000, 22000, 24500], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.15)', borderWidth: 3, fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+            window.pieChart = new Chart(document.getElementById('pieChart').getContext('2d'), {
+                type: 'doughnut', data: { labels: ['Attivi', 'In Trattativa'], datasets: [{ data: [0, 0], backgroundColor: ['#10b981', '#f59e0b'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            const defaultClients = [{ id: 1, name: "Tech Solutions Srl", email: "info@techsolutions.it", phone: "06 1234567", status: "active" }, { id: 2, name: "Mario Rossi Architetto", email: "mario.rossi@studio.it", phone: "333 9876543", status: "pending" }];
+            window.clients = JSON.parse(localStorage.getItem('crm_clients_v3')) || defaultClients;
+            window.renderTable = function() {
+                const tbody = document.getElementById('clients-table-body'); tbody.innerHTML = '';
+                let activeCount = 0, pendingCount = 0;
+                window.clients.forEach(c => {
+                    if(c.status === 'active') activeCount++; else pendingCount++;
+                    const badge = c.status === 'active' ? '<span class="badge active">Attivo</span>' : '<span class="badge pending">Trattativa</span>';
+                    tbody.innerHTML += `<tr><td style="font-weight:600;">${c.name}</td><td>${c.email}</td><td>${c.phone}</td><td>${badge}</td><td style="text-align: right;"><button class="action-btn" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button></td></tr>`;
+                });
+                document.getElementById('dash-total-clients').innerText = window.clients.length;
+                window.pieChart.data.datasets[0].data = [activeCount, pendingCount]; window.pieChart.update();
+                localStorage.setItem('crm_clients_v3', JSON.stringify(window.clients));
             };
-            clients.push(newClient);
-            localStorage.setItem('crm_clients', JSON.stringify(clients));
-            renderTable();
-            closeModal();
+            window.deleteClient = function(id) {
+                if(confirm("Eliminare cliente?")) { window.clients = window.clients.filter(c => c.id !== id); window.renderTable(); }
+            };
+            document.getElementById('add-client-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                window.clients.push({ id: Date.now(), name: document.getElementById('client-name').value, email: document.getElementById('client-email').value, phone: document.getElementById('client-phone').value, status: document.getElementById('client-status').value });
+                window.renderTable(); closeModal(); document.querySelector('.nav-btn[data-target="clienti"]').click();
+            });
+            window.renderTable();
         });
-        // Inizializza
-        renderTable();
     </script>
 </body>
 </html>
